@@ -39,10 +39,29 @@ labels = to_categorical(np.asarray(labels))
 print('Shape of data tensor:', data.shape)
 print('Shape of label tensor:', labels.shape)
 
+model = Sequential()
+# TODO MaxSequenceLength x DictionarySize
+model.add(Dense(EmbeddingDim, input_dim=DictionarySize))
+model.add(Activation('softmax'))
+model.compile(optimizer='rmsprop',
+  loss='categorical_crossentropy',
+  metrics=['accuracy'])
+
+#model.fit(x_train, y_train, validation_data=(x_val, y_val),
+#          nb_epoch=2, batch_size=128)
+
 # Derive n-grams
 def nGram(n, s):
     return []
 
-#model = Sequential()
-#model.add(Dense(DictionarySize))
-#model.add(Activation('softmax'))
+def oneHot(wordIndex):
+	vect = np.zeros(len(word_index) + 1)
+	vect[wordIndex] = 1
+	return vect
+
+def query(sentence):
+	inputs    = tokenizer.texts_to_sequences([sentence])[0]
+	iptOneHot = [oneHot(i) for i in inputs]
+	return model.predict(np.asarray(iptOneHot))
+
+print(query("world!"))
