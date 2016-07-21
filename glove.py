@@ -7,17 +7,21 @@ from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, Model
-from keras.layers import Dense, Input, Flatten, Activation
+from keras.layers import Dense, Input, Flatten, Activation, Merge
 
-DictionarySize = 10
-HiddenSize     = 5
+DictionarySize = 10  # V
+HiddenSize1    = 50   # Hidden layer for sequence elements
+HiddenSize2    = 10   # Hidden layer after sequence elements have been merged
+LabelsLength   = 2
 LearningRate   = 0.2
-EmbeddingDim   = 100
+EmbeddingDim   = 300
 MaxWords       = 20000
-MaxSequenceLength = 100
+SequenceLength = 10
 
 texts = [
         "Hello world!",
+        "It is expensive",
+        "It is cheap",
         "How are you?"
         ]
 labels = [0, 1]
@@ -26,13 +30,17 @@ tokenizer = Tokenizer(nb_words=MaxWords)
 tokenizer.fit_on_texts(texts)
 sequences = tokenizer.texts_to_sequences(texts)
 
+print(sequences)
+
 # Map each word to its unique index
 # {'you': 1, 'how': 2, 'hello': 3, 'are': 4, 'world': 5}
 word_index = tokenizer.word_index
 print('Found %s unique tokens.' % len(word_index))
 
 # Zero-pad every string
-data = pad_sequences(sequences, maxlen=MaxSequenceLength)
+data = pad_sequences(sequences, maxlen=SequenceLength)
+
+print(data)
 
 # TODO Why matrix?
 labels = to_categorical(np.asarray(labels))
@@ -40,9 +48,8 @@ print('Shape of data tensor:', data.shape)
 print('Shape of label tensor:', labels.shape)
 
 model = Sequential()
-# TODO MaxSequenceLength x DictionarySize
-model.add(Dense(EmbeddingDim, input_dim=DictionarySize))
-model.add(Activation('softmax'))
+model.add(Dense(EmbeddingDim, input_dim=SequenceLength * DictionarySize))
+model.add(Dense(LabelsLength, activation='softmax'))
 model.compile(optimizer='rmsprop',
   loss='categorical_crossentropy',
   metrics=['accuracy'])
@@ -56,12 +63,15 @@ def nGram(n, s):
 
 def oneHot(wordIndex):
 	vect = np.zeros(len(word_index) + 1)
-	vect[wordIndex] = 1
+	if wordIndex > 0:
+		vect[wordIndex] = 1
 	return vect
 
 def query(sentence):
-	inputs    = tokenizer.texts_to_sequences([sentence])[0]
-	iptOneHot = [oneHot(i) for i in inputs]
-	return model.predict(np.asarray(iptOneHot))
+	_sequences = tokenizer.texts_to_sequences([sentence])
+	_padded = pad_sequences(_sequences, maxlen=SequenceLength)[0]
+	iptOneHot = [oneHot(i) for i in _padded]
+	concat = np.concatenate(iptOneHot)[np.newaxis]
+	return model.predict(concat)
 
-print(query("world!"))
+print(query("It is"))
