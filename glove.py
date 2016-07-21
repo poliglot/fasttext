@@ -39,7 +39,7 @@ def sentenceVector(tokeniser, dictionarySize, sentence):
 	# Zero-pad every string
 	padded    = pad_sequences(sequences, maxlen=SequenceLength)[0]
 	iptOneHot = [oneHot(dictionarySize, i) for i in padded]
-	concat    = np.concatenate(iptOneHot)  #[np.newaxis]
+	concat    = np.concatenate(iptOneHot)
 	return concat
 
 def train(x, y):
