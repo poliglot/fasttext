@@ -8,8 +8,6 @@ from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input, Flatten, Activation, Merge
 
-import data_reader
-
 np.random.seed(1337)
 
 HiddenSize     = 10
@@ -41,6 +39,10 @@ def sentenceVector(tokeniser, dictionarySize, sentence):
 	iptOneHot = [oneHot(dictionarySize, i) for i in padded]
 	concat    = np.concatenate(iptOneHot)
 	return concat
+
+def save(model):
+	json_string = model.to_json()
+	model.save_weights('my_model_weights.h5')
 
 def train(x, y):
 	tokeniser = Tokenizer(nb_words=MaxWords)
@@ -75,11 +77,3 @@ def train(x, y):
 def query(model, tokeniser, dictionarySize, sentence):
 	concat = sentenceVector(tokeniser, dictionarySize, sentence)
 	return model.predict(np.asarray(concat)[np.newaxis])
-
-dataset = data_reader.dataset()
-x = [row[0] for row in dataset]
-y = [row[1] for row in dataset]
-model, tokeniser, dictionarySize = train(x, y)
-
-print(query(model, tokeniser, dictionarySize, "It is bad"))
-print(query(model, tokeniser, dictionarySize, "It is good"))
