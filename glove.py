@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import numpy as np
+import data_reader
 np.random.seed(1337)
 
 from keras.preprocessing.text import Tokenizer
@@ -9,7 +10,7 @@ from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input, Flatten, Activation, Merge
 
-DictionarySize = 10  # V
+DictionarySize = 5277  # V
 HiddenSize1    = 50   # Hidden layer for sequence elements
 HiddenSize2    = 10   # Hidden layer after sequence elements have been merged
 LabelsLength   = 2
@@ -18,12 +19,9 @@ EmbeddingDim   = 300
 MaxWords       = 20000
 SequenceLength = 10
 
-texts = [
-        "Hello world!",
-        "It is expensive",
-        "It is cheap",
-        "How are you?"
-        ]
+dataset = data_reader.dataset()
+texts = list(map(lambda x: x[1], dataset))
+
 labels = [0, 1]
 
 tokenizer = Tokenizer(nb_words=MaxWords)
