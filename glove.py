@@ -10,7 +10,6 @@ from keras.utils.np_utils import to_categorical
 from keras.models import Sequential, Model
 from keras.layers import Dense, Input, Flatten, Activation, Merge
 
-DictionarySize = 5277  # V
 HiddenSize1    = 50   # Hidden layer for sequence elements
 HiddenSize2    = 10   # Hidden layer after sequence elements have been merged
 LabelsLength   = 2
@@ -34,6 +33,8 @@ print(sequences)
 # {'you': 1, 'how': 2, 'hello': 3, 'are': 4, 'world': 5}
 word_index = tokenizer.word_index
 print('Found %s unique tokens.' % len(word_index))
+
+DictionarySize = len(word_index) + 1  # V
 
 # Zero-pad every string
 data = pad_sequences(sequences, maxlen=SequenceLength)
