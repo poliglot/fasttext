@@ -15,6 +15,3 @@ open('model-dictionary-size.dat', 'w').write(str(dictionarySize))
 six.moves.cPickle.dump(tokeniser, open("tokeniser.pkl", "wb"))
 
 model.save_weights('model-' + str(time.time()) + '.h5')
-
-print(glove.query(model, tokeniser, dictionarySize, "It is bad"))
-print(glove.query(model, tokeniser, dictionarySize, "It is good"))

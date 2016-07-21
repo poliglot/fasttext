@@ -6,8 +6,7 @@ import glove
 
 tokeniser = six.moves.cPickle.load(open("tokeniser.pkl", 'rb'))
 
-lastModel = glob.glob('model-*.h5')[-1]
-print(lastModel)
+lastModel = sorted(glob.glob('model-*.h5'))[-1]
 
 model = model_from_json(open("model.json").read())
 model.load_weights(lastModel)

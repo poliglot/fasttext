@@ -40,10 +40,6 @@ def sentenceVector(tokeniser, dictionarySize, sentence):
 	concat    = np.concatenate(iptOneHot)
 	return concat
 
-def save(model):
-	json_string = model.to_json()
-	model.save_weights('my_model_weights.h5')
-
 def train(x, y):
 	tokeniser = Tokenizer(nb_words=MaxWords)
 	tokeniser.fit_on_texts(x)
