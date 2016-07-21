@@ -8,7 +8,7 @@ def dataset():
       line = line.strip()
       sentiment = line[-1]
       if sentiment in ['0', '1']:
-        sentences.append((sentiment, line[0:-2]))
+        sentences.append((int(sentiment), line[0:-2]))
 
   sentences = []
 
