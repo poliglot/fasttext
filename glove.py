@@ -39,7 +39,7 @@ def sentenceVector(tokeniser, dictionarySize, sentence):
 	# Zero-pad every string
 	padded    = pad_sequences(sequences, maxlen=SequenceLength)[0]
 	iptOneHot = [oneHot(dictionarySize, i) for i in padded]
-	concat    = np.concatenate(iptOneHot)[np.newaxis]
+	concat    = np.concatenate(iptOneHot)  #[np.newaxis]
 	return concat
 
 def train(x, y):
@@ -47,14 +47,13 @@ def train(x, y):
 	tokeniser.fit_on_texts(x)
 
 	# Map each word to its unique index
-	wordIndex     = tokeniser.word_index
+	wordIndex      = tokeniser.word_index
 	dictionarySize = len(wordIndex) + 1
 
 	data   = [sentenceVector(tokeniser, dictionarySize, sentence) for sentence in x]
-	labels = [row[np.newaxis] for row in to_categorical(np.asarray(y))]
+	labels = [row for row in to_categorical(np.asarray(y))]
 
-	print('Shape of data tensor:', len(data))
-	print('Shape of label tensor:', len(labels))
+	print('Instances:', len(data))
 	print('Dictionary size: ', dictionarySize)
 
 	model = Sequential()
@@ -63,18 +62,23 @@ def train(x, y):
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
 	x_train, y_train, x_val, y_val = prepare(data, labels)
+	x_train = np.matrix(x_train)
+	y_train = np.matrix(y_train)
 
-	model.fit(x_train[0], y_train[0], validation_data=(x_val[0], y_val[0]), nb_epoch=2, batch_size=128)
+	x_val = np.matrix(x_val)
+	y_val = np.matrix(y_val)
+
+	model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=2, batch_size=128)
 
 	return model, tokeniser, dictionarySize
 
 def query(model, tokeniser, dictionarySize, sentence):
 	concat = sentenceVector(tokeniser, dictionarySize, sentence)
-	return model.predict(concat)
+	return model.predict(np.asarray(concat)[np.newaxis])
 
 dataset = data_reader.dataset()
-x = [row[0] for row in dataset][0:100]
-y = [row[1] for row in dataset][0:100]
+x = [row[0] for row in dataset]
+y = [row[1] for row in dataset]
 model, tokeniser, dictionarySize = train(x, y)
 
 print(query(model, tokeniser, dictionarySize, "It is bad"))
