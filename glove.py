@@ -10,14 +10,14 @@ from keras.layers import Dense, Input, Flatten, Activation, Merge
 
 np.random.seed(1337)
 
-EmbeddingDim   = 50
-MaxWords       = 30000
-SequenceLength = 50
-Labels         = 3
-Epochs         = 5
-EpochsAmount   = 1000
-BatchSize      = 64
-Categories     = { 1: -1, 2: -1, 3: 0, 4: 1, 5: 1 }
+EmbeddingDim    = 50
+MaxWords        = 30000
+SequenceLength  = 50
+Labels          = 3
+Epochs          = 5
+SamplesPerEpoch = 1000
+BatchSize       = 64
+Categories      = { 1: -1, 2: -1, 3: 0, 4: 1, 5: 1 }
 
 def prepare(data, labels):
 	VALIDATION_SPLIT = 0.2
@@ -104,7 +104,7 @@ def train(data_reader, oneHot, contextHashes):
 
 	trainingGenerator = to_sentence(data_reader.dataset(True), tokeniser, dictionarySize, oneHot, contextHashes)
 	validationGenerator = to_sentence(data_reader.dataset(False), tokeniser, dictionarySize, oneHot, contextHashes)
-	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=EpochsAmount, validation_data=validationGenerator, nb_val_samples=EpochsAmount)
+	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=SamplesPerEpoch, validation_data=validationGenerator, nb_val_samples=EpochsAmount)
 
 	return model, tokeniser, dictionarySize
 
