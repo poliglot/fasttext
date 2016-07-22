@@ -18,11 +18,11 @@ SamplesPerEpoch = 1000
 BatchSize       = 64
 Labels          = 3
 LabelMapping    = {
-  1: -1,
-  2: -1,
-  3: 0,
-  4: 1,
-  5: 1
+  1: 0,
+  2: 0,
+  3: 1,
+  4: 2,
+  5: 2
 }
 
 def oneHot(dictionarySize, wordIndex):
