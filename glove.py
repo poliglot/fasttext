@@ -54,22 +54,25 @@ def triGramHash(sequence, t, buckets):
 
 	return (t2 * Prime1 * Prime2 + t1 * Prime1) % buckets
 
-def sentenceVector(tokeniser, dictionarySize, sentence, contextHashes):
+def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHashes):
+	result    = np.array([])
 	sequences = tokeniser.texts_to_sequences([sentence])
 	# Zero-pad every string
 	padded    = pad_sequences(sequences, maxlen=SequenceLength)[0]
-	iptOneHot = [oneHot(dictionarySize, i) for i in padded]
-	concat    = np.concatenate(iptOneHot)
+
+	if oneHotVectors:
+		iptOneHot = [oneHot(dictionarySize, i) for i in padded]
+		result    = np.append(result, np.concatenate(iptOneHot))
 
 	if contextHashes:
 		buckets = np.zeros(dictionarySize * 2)
 		for t in range(SequenceLength): buckets[biGramHash(padded, t, dictionarySize)] = 1
 		for t in range(SequenceLength): buckets[dictionarySize + triGramHash(padded, t, dictionarySize)] = 1
-		return np.append(concat, buckets)
+		result = np.append(result, buckets)
 
-	return concat
+	return result
 
-def train(x, y, contextHashes):
+def train(x, y, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
 	tokeniser.fit_on_texts(x)
 
@@ -77,17 +80,20 @@ def train(x, y, contextHashes):
 	wordIndex      = tokeniser.word_index
 	dictionarySize = len(wordIndex) + 1
 
-	data   = [sentenceVector(tokeniser, dictionarySize, sentence, contextHashes) for sentence in x]
+	data   = [sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes) for sentence in x]
 	labels = [row for row in to_categorical(np.asarray(y))]
 
 	print('Instances:', len(data))
 	print('Dictionary size: ', dictionarySize)
 
+	oneHotDimension = 0
+	if oneHot: oneHotDimension = SequenceLength * dictionarySize
+
 	contextHashesDimension = 0
 	if contextHashes: contextHashesDimension = dictionarySize * 2
 
 	model = Sequential()
-	model.add(Dense(EmbeddingDim, input_dim=(SequenceLength * dictionarySize + contextHashesDimension)))
+	model.add(Dense(EmbeddingDim, input_dim=(oneHotDimension + contextHashesDimension)))
 	model.add(Dense(Labels, activation='softmax'))
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
