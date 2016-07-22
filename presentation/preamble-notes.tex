@@ -1,0 +1,34 @@
+\usepackage{pgfpages}
+\setbeameroption{show notes}
+\setbeamertemplate{note page}[plain]
+
+% Stick slide number on each note: notice division by two
+
+% Eliminate beamer navigation line at bottom of slides
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{calc}
+\newcounter{curslide}
+\addtobeamertemplate{note page}{%
+    \setcounter{curslide}{\thepage / 2}%
+    \textbf{Slide \thecurslide} \par}{}
+
+% Force notes on each slide
+% http://tex.stackexchange.com/questions/11708/run-macro-on-each-frame-in-beamer
+
+\makeatletter
+\def\beamer@framenotesbegin{% at beginning of slide
+  \gdef\beamer@noteitems{}%
+  \gdef\beamer@notes{{}}% used to be totally empty.
+}
+\makeatother
+
+\newcommand{\plain}[2][]{%
+  \begin{frame}{#1}
+    \centering
+    \vfill\vspace{1em}\usebeamerfont{section title}{\scshape #2}\vfill
+  \end{frame}
+}
+
+\input{common.tex}
+
