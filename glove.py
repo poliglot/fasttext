@@ -25,17 +25,6 @@ LabelMapping    = {
   5: 1
 }
 
-def prepare(data, labels):
-	VALIDATION_SPLIT = 0.2
-	nb_validation_samples = int(VALIDATION_SPLIT * len(data))
-
-	x_train = data[:-nb_validation_samples]
-	y_train = labels[:-nb_validation_samples]
-	x_val   = data[-nb_validation_samples:]
-	y_val   = labels[-nb_validation_samples:]
-
-	return x_train, y_train, x_val, y_val
-
 def oneHot(dictionarySize, wordIndex):
 	vect = np.zeros(dictionarySize)
 	if wordIndex > 0: vect[wordIndex] = 1
