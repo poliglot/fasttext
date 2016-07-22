@@ -12,10 +12,12 @@ np.random.seed(1337)
 
 EmbeddingDim   = 50
 MaxWords       = 30000
-SequenceLength = 20
-Labels         = 6
+SequenceLength = 50
+Labels         = 3
 Epochs         = 5
+EpochsAmount   = 1000
 BatchSize      = 64
+Categories     = { 1: -1, 2: -1, 3: 0, 4: 1, 5: 1 }
 
 def prepare(data, labels):
 	VALIDATION_SPLIT = 0.2
@@ -78,14 +80,11 @@ def map_to(tupleStream, element):
 
 def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
 	for item in dataset:
-		print("item", item)
-		print("item0", item[0])
-		print("item1", item[1])
 		sv = sentenceVector(tokeniser, dictionarySize, item[0], oneHot, contextHashes)[np.newaxis]
-		# print(sv)
-		categorical = to_categorical(np.asarray(item[1]))
-		print(item[1], categorical)
-		yield (sv, categorical)
+		categorical = np.zeros(Labels)
+		categorical[Categories[item[1]]] = 1
+
+		yield (sv, categorical[np.newaxis])
 
 def train(data_reader, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
@@ -95,12 +94,6 @@ def train(data_reader, oneHot, contextHashes):
 	# Map each word to its unique index
 	wordIndex      = tokeniser.word_index
 	dictionarySize = len(wordIndex) + 1
-
-	# data   = [sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes) for sentence in data_reader.dataset(True)]
-	# labels = [row for row in to_categorical(np.asarray(y))]
-
-	# print('Instances:', len(data))
-	# print('Dictionary size: ', dictionarySize)
 
 	oneHotDimension = 0
 	if oneHot: oneHotDimension = SequenceLength * dictionarySize
@@ -113,16 +106,9 @@ def train(data_reader, oneHot, contextHashes):
 	model.add(Dense(Labels, activation='softmax'))
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	# x_train, y_train, x_val, y_val = prepare(data, labels)
-	# x_train = np.matrix(x_train)
-	# y_train = np.matrix(y_train)
-
-	# x_val = np.matrix(x_val)
-	# y_val = np.matrix(y_val)
 	trainingGenerator = to_sentence(data_reader.dataset(True), tokeniser, dictionarySize, oneHot, contextHashes)
 	validationGenerator = to_sentence(data_reader.dataset(False), tokeniser, dictionarySize, oneHot, contextHashes)
-	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=10000, validation_data=validationGenerator, nb_val_samples=10000)
-	# model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=Epochs, batch_size=BatchSize)
+	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=EpochsAmount, validation_data=validationGenerator, nb_val_samples=EpochsAmount)
 
 	return model, tokeniser, dictionarySize
 
