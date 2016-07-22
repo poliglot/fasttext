@@ -13,7 +13,7 @@ np.random.seed(1337)
 EmbeddingDim   = 50
 MaxWords       = 30000
 SequenceLength = 20
-Labels         = 2
+Labels         = 6
 Epochs         = 5
 BatchSize      = 64
 
@@ -73,7 +73,19 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 	return result
 
 def map_to(tupleStream, element):
-	yield tupleStream.next()[element]
+	for tpl in tupleStream:
+		yield tpl[element]
+
+def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
+	for item in dataset:
+		print("item", item)
+		print("item0", item[0])
+		print("item1", item[1])
+		sv = sentenceVector(tokeniser, dictionarySize, item[0], oneHot, contextHashes)[np.newaxis]
+		# print(sv)
+		categorical = to_categorical(np.asarray(item[1]))
+		print(item[1], categorical)
+		yield (sv, categorical)
 
 def train(data_reader, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
@@ -107,8 +119,9 @@ def train(data_reader, oneHot, contextHashes):
 
 	# x_val = np.matrix(x_val)
 	# y_val = np.matrix(y_val)
-
-	model.fit_generator(data_reader.dataset(True), nb_epoch=Epochs, samples_per_epoch=10000, validation_data=data_reader.dataset(False), nb_val_samples=10000)
+	trainingGenerator = to_sentence(data_reader.dataset(True), tokeniser, dictionarySize, oneHot, contextHashes)
+	validationGenerator = to_sentence(data_reader.dataset(False), tokeniser, dictionarySize, oneHot, contextHashes)
+	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=10000, validation_data=validationGenerator, nb_val_samples=10000)
 	# model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=Epochs, batch_size=BatchSize)
 
 	return model, tokeniser, dictionarySize
