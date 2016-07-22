@@ -14,7 +14,7 @@ EmbeddingDim   = 300
 MaxWords       = 30000
 SequenceLength = 20
 Labels         = 2
-Buckets        = 200
+Buckets        = 50
 Epochs         = 5
 BatchSize      = 64
 
@@ -40,7 +40,13 @@ Prime2 = 18409199
 
 # `sequence` must refer to zero-padded sequence.
 # From http://www.fit.vutbr.cz/~imikolov/rnnlm/thesis.pdf, equation 6.6
-def hash(sequence, t):
+def biGramHash(sequence, t):
+	t1 = 0
+	if (t - 1 >= 0): t1 = sequence[t - 1]
+
+	return (t1 * Prime1) % Buckets
+
+def triGramHash(sequence, t):
 	t1 = 0
 	if (t - 1 >= 0): t1 = sequence[t - 1]
 
@@ -57,8 +63,9 @@ def sentenceVector(tokeniser, dictionarySize, sentence, contextHashes):
 	concat    = np.concatenate(iptOneHot)
 
 	if contextHashes:
-		buckets = np.zeros(Buckets)
-		for t in range(SequenceLength): buckets[hash(padded, t)] = 1
+		buckets = np.zeros(Buckets * 2)
+		for t in range(SequenceLength): buckets[biGramHash(padded, t)] = 1
+		for t in range(SequenceLength): buckets[Buckets + triGramHash(padded, t)] = 1
 		return np.append(concat, buckets)
 
 	return concat
@@ -78,7 +85,7 @@ def train(x, y, contextHashes):
 	print('Dictionary size: ', dictionarySize)
 
 	contextHashesDimension = 0
-	if contextHashes: contextHashesDimension = Buckets
+	if contextHashes: contextHashesDimension = Buckets * 2
 
 	model = Sequential()
 	model.add(Dense(EmbeddingDim, input_dim=(SequenceLength * dictionarySize + contextHashesDimension)))
