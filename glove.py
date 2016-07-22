@@ -72,19 +72,23 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 
 	return result
 
-def train(x, y, oneHot, contextHashes):
+def map_to(tupleStream, element):
+	yield tupleStream.next()[element]
+
+def train(data_reader, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
-	tokeniser.fit_on_texts(x)
+
+	tokeniser.fit_on_texts(map_to(data_reader.dataset(True), 0))
 
 	# Map each word to its unique index
 	wordIndex      = tokeniser.word_index
 	dictionarySize = len(wordIndex) + 1
 
-	data   = [sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes) for sentence in x]
-	labels = [row for row in to_categorical(np.asarray(y))]
+	# data   = [sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes) for sentence in data_reader.dataset(True)]
+	# labels = [row for row in to_categorical(np.asarray(y))]
 
-	print('Instances:', len(data))
-	print('Dictionary size: ', dictionarySize)
+	# print('Instances:', len(data))
+	# print('Dictionary size: ', dictionarySize)
 
 	oneHotDimension = 0
 	if oneHot: oneHotDimension = SequenceLength * dictionarySize
@@ -97,14 +101,15 @@ def train(x, y, oneHot, contextHashes):
 	model.add(Dense(Labels, activation='softmax'))
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	x_train, y_train, x_val, y_val = prepare(data, labels)
-	x_train = np.matrix(x_train)
-	y_train = np.matrix(y_train)
+	# x_train, y_train, x_val, y_val = prepare(data, labels)
+	# x_train = np.matrix(x_train)
+	# y_train = np.matrix(y_train)
 
-	x_val = np.matrix(x_val)
-	y_val = np.matrix(y_val)
+	# x_val = np.matrix(x_val)
+	# y_val = np.matrix(y_val)
 
-	model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=Epochs, batch_size=BatchSize)
+	model.fit_generator(data_reader.dataset(True), nb_epoch=Epochs, samples_per_epoch=10000, validation_data=data_reader.dataset(False), nb_val_samples=10000)
+	# model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=Epochs, batch_size=BatchSize)
 
 	return model, tokeniser, dictionarySize
 

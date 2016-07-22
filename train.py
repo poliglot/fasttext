@@ -3,11 +3,9 @@ import six.moves.cPickle
 
 import glove
 import data_reader
+import yelp_reader
 
-dataset = data_reader.dataset()
-x = [row[0] for row in dataset]
-y = [row[1] for row in dataset]
-model, tokeniser, dictionarySize = glove.train(x, y, oneHot = False, contextHashes = True)
+model, tokeniser, dictionarySize = glove.train(yelp_reader, oneHot = False, contextHashes = True)
 
 jsonModel = model.to_json()
 open('model.json', 'w').write(jsonModel)
