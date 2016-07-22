@@ -17,13 +17,13 @@ Epochs          = 5
 SamplesPerEpoch = 1000
 BatchSize       = 64
 Labels          = 3
-LabelMapping    = {
-  1: 0,
-  2: 0,
-  3: 1,
-  4: 2,
-  5: 2
-}
+#LabelMapping    = {
+#  1: 0,
+#  2: 0,
+#  3: 1,
+#  4: 2,
+#  5: 2
+#}
 
 def oneHot(dictionarySize, wordIndex):
 	vect = np.zeros(dictionarySize)
@@ -70,8 +70,9 @@ def mapGenerator(generator, tokeniser, dictionarySize, oneHot, contextHashes):
 		label    = row[1]
 
 		x = sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes)
-		y = np.zeros(Labels)
-		y[LabelMapping[label]] = 1
+		# y = np.zeros(Labels)
+		# y[LabelMapping[label]] = 1
+		y = np.asarray([label])
 
 		yield (x[np.newaxis], y[np.newaxis])
 
@@ -89,8 +90,10 @@ def train(dataReader, oneHot, contextHashes):
 
 	model = Sequential()
 	model.add(Dense(EmbeddingDim, input_dim=(oneHotDimension + contextHashesDimension)))
-	model.add(Dense(Labels, activation='softmax'))
-	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+	# model.add(Dense(Labels, activation='softmax'))
+	# model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+	model.add(Dense(1))
+	model.compile(optimizer='rmsprop', loss='mean_squared_error', metrics=['accuracy', 'mean_squared_error'])
 
 	trainingGenerator   = mapGenerator(dataReader.trainingData(n),   tokeniser, dictionarySize, oneHot, contextHashes)
 	validationGenerator = mapGenerator(dataReader.validationData(n), tokeniser, dictionarySize, oneHot, contextHashes)
