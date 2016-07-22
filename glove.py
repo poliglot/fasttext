@@ -77,7 +77,6 @@ def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
 
 def train(data_reader, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
-
 	tokeniser.fit_on_texts((row[0] for row in data_reader.dataset(True)))
 
 	# Map each word to its unique index
