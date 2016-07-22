@@ -93,7 +93,7 @@ def train(data_reader, oneHot, contextHashes):
 
 	trainingGenerator   = to_sentence(data_reader.dataset(True), tokeniser, dictionarySize, oneHot, contextHashes)
 	validationGenerator = to_sentence(data_reader.dataset(False), tokeniser, dictionarySize, oneHot, contextHashes)
-	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=SamplesPerEpoch, validation_data=validationGenerator, nb_val_samples=EpochsAmount)
+	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=SamplesPerEpoch, validation_data=validationGenerator, nb_val_samples=SamplesPerEpoch)
 
 	return model, tokeniser, dictionarySize
 
