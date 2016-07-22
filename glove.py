@@ -48,17 +48,12 @@ Prime2 = 18409199
 # `sequence` must refer to zero-padded sequence.
 # From http://www.fit.vutbr.cz/~imikolov/rnnlm/thesis.pdf, equation 6.6
 def biGramHash(sequence, t, buckets):
-	t1 = 0
-	if (t - 1 >= 0): t1 = sequence[t - 1]
-
+	t1 = sequence[t - 1] if t - 1 >= 0 else 0
 	return (t1 * Prime1) % buckets
 
 def triGramHash(sequence, t, buckets):
-	t1 = 0
-	if (t - 1 >= 0): t1 = sequence[t - 1]
-
-	t2 = 0
-	if (t - 2 >= 0): t2 = sequence[t - 2]
+	t1 = sequence[t - 1] if t - 1 >= 0 else 0
+	t2 = sequence[t - 2] if t - 2 >= 0 else 0
 
 	return (t2 * Prime1 * Prime2 + t1 * Prime1) % buckets
 
@@ -100,11 +95,8 @@ def train(data_reader, oneHot, contextHashes):
 	wordIndex      = tokeniser.word_index
 	dictionarySize = len(wordIndex) + 1
 
-	oneHotDimension = 0
-	if oneHot: oneHotDimension = SequenceLength * dictionarySize
-
-	contextHashesDimension = 0
-	if contextHashes: contextHashesDimension = dictionarySize * 2
+	oneHotDimension        = SequenceLength * dictionarySize if oneHot else 0
+	contextHashesDimension = dictionarySize * 2 if contextHashes else 0
 
 	model = Sequential()
 	model.add(Dense(EmbeddingDim, input_dim=(oneHotDimension + contextHashesDimension)))
