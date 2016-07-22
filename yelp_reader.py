@@ -1,27 +1,25 @@
 import json
 import codecs
 
-ValidationSetSize = 50000
+DataSetPath = 'yelp_academic_dataset_review.json'
 
-def dataset(training=True):
-  i = 0
+def processFile(n, validation):
+  with codecs.open(DataSetPath, encoding='iso-8859-1') as f:
+    if validation:
+      for _ in range(n): next(f)
 
-  with codecs.open('yelp_academic_dataset_review.json', encoding='iso-8859-1') as f:
-    if training:
-      while i < ValidationSetSize:
-        next(f)
-        i = i + 1
+    for _ in range(n):
+      line   = next(f).strip()
+      review = json.loads(line)
 
-      for line in f:
-        line = line.strip()
-        if(len(line.split()) > 50): next(f)
+      while len(review['text'].split()) > 50:
+        line   = next(f).strip()
         review = json.loads(line)
-        yield (review['text'], int(review['stars']))
-    else:
-      for line in f:
-        line = line.strip()
-        if(len(line.split()) > 50): next(f)
-        review = json.loads(line)
-        yield (review['text'], int(review['stars']))
-        i = i + 1
-        if i >= ValidationSetSize: break
+
+      yield (review['text'], int(review['stars']))
+
+def trainingData(n):
+  return processFile(n, validation = False)
+
+def validationData(n):
+  return processFile(n, validation = True)

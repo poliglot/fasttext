@@ -2,7 +2,7 @@ import time
 import six.moves.cPickle
 
 import glove
-import data_reader
+# import data_reader
 import yelp_reader
 
 model, tokeniser, dictionarySize = glove.train(yelp_reader, oneHot = False, contextHashes = True)

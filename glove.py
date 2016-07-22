@@ -64,10 +64,10 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 
 	return result
 
-def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
-	for item in dataset:
-		sentence = item[0]
-		label    = item[1]
+def mapGenerator(generator, tokeniser, dictionarySize, oneHot, contextHashes):
+	for row in generator:
+		sentence = row[0]
+		label    = row[1]
 
 		x = sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes)
 		y = np.zeros(Labels)
@@ -75,13 +75,14 @@ def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
 
 		yield (x[np.newaxis], y[np.newaxis])
 
-def train(data_reader, oneHot, contextHashes):
-	tokeniser = Tokenizer(nb_words=MaxWords)
-	tokeniser.fit_on_texts((row[0] for row in data_reader.dataset(True)))
+def train(dataReader, oneHot, contextHashes):
+	n = (Epochs + 1) * SamplesPerEpoch  # TODO + 1 should not be needed
 
-	# Map each word to its unique index
-	wordIndex      = tokeniser.word_index
-	dictionarySize = len(wordIndex) + 1
+	tokeniser = Tokenizer(nb_words=MaxWords)
+	tokeniser.fit_on_texts((row[0] for row in dataReader.trainingData(n)))
+
+	# `word_index` maps each word to its unique index
+	dictionarySize = len(tokeniser.word_index) + 1
 
 	oneHotDimension        = SequenceLength * dictionarySize if oneHot else 0
 	contextHashesDimension = dictionarySize * 2 if contextHashes else 0
@@ -91,12 +92,18 @@ def train(data_reader, oneHot, contextHashes):
 	model.add(Dense(Labels, activation='softmax'))
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	trainingGenerator   = to_sentence(data_reader.dataset(True), tokeniser, dictionarySize, oneHot, contextHashes)
-	validationGenerator = to_sentence(data_reader.dataset(False), tokeniser, dictionarySize, oneHot, contextHashes)
-	model.fit_generator(trainingGenerator, nb_epoch=Epochs, samples_per_epoch=SamplesPerEpoch, validation_data=validationGenerator, nb_val_samples=SamplesPerEpoch)
+	trainingGenerator   = mapGenerator(dataReader.trainingData(n),   tokeniser, dictionarySize, oneHot, contextHashes)
+	validationGenerator = mapGenerator(dataReader.validationData(n), tokeniser, dictionarySize, oneHot, contextHashes)
+
+	model.fit_generator(trainingGenerator,
+		nb_epoch=Epochs,
+		samples_per_epoch=SamplesPerEpoch,
+		validation_data=validationGenerator,
+		nb_val_samples=SamplesPerEpoch)
 
 	return model, tokeniser, dictionarySize
 
+# TODO Fix
 def query(model, tokeniser, dictionarySize, sentence):
 	concat = sentenceVector(tokeniser, dictionarySize, sentence)
 	return model.predict(np.asarray(concat)[np.newaxis])
