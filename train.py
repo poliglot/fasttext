@@ -5,9 +5,9 @@ import glove
 import data_reader
 
 dataset = data_reader.dataset()
-x = [row[0] for row in dataset[1:50]]
-y = [row[1] for row in dataset[1:50]]
-model, tokeniser, dictionarySize = glove.train(x, y)
+x = [row[0] for row in dataset]
+y = [row[1] for row in dataset]
+model, tokeniser, dictionarySize = glove.train(x, y, contextHashes = True)
 
 jsonModel = model.to_json()
 open('model.json', 'w').write(jsonModel)
