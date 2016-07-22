@@ -12,9 +12,11 @@ np.random.seed(1337)
 
 EmbeddingDim   = 300
 MaxWords       = 30000
-SequenceLength = 10  # Increase number
+SequenceLength = 20
 Labels         = 2
 Buckets        = 200
+Epochs         = 5
+BatchSize      = 64
 
 def prepare(data, labels):
 	VALIDATION_SPLIT = 0.2
@@ -90,7 +92,7 @@ def train(x, y, contextHashes):
 	x_val = np.matrix(x_val)
 	y_val = np.matrix(y_val)
 
-	model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=2, batch_size=128)
+	model.fit(x_train, y_train, validation_data=(x_val, y_val), nb_epoch=Epochs, batch_size=BatchSize)
 
 	return model, tokeniser, dictionarySize
 
