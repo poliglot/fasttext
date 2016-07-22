@@ -10,11 +10,10 @@ from keras.layers import Dense, Input, Flatten, Activation, Merge
 
 np.random.seed(1337)
 
-EmbeddingDim   = 300
+EmbeddingDim   = 50
 MaxWords       = 30000
 SequenceLength = 20
 Labels         = 2
-Buckets        = 50
 Epochs         = 5
 BatchSize      = 64
 
@@ -40,20 +39,20 @@ Prime2 = 18409199
 
 # `sequence` must refer to zero-padded sequence.
 # From http://www.fit.vutbr.cz/~imikolov/rnnlm/thesis.pdf, equation 6.6
-def biGramHash(sequence, t):
+def biGramHash(sequence, t, buckets):
 	t1 = 0
 	if (t - 1 >= 0): t1 = sequence[t - 1]
 
-	return (t1 * Prime1) % Buckets
+	return (t1 * Prime1) % buckets
 
-def triGramHash(sequence, t):
+def triGramHash(sequence, t, buckets):
 	t1 = 0
 	if (t - 1 >= 0): t1 = sequence[t - 1]
 
 	t2 = 0
 	if (t - 2 >= 0): t2 = sequence[t - 2]
 
-	return (t2 * Prime1 * Prime2 + t1 * Prime1) % Buckets
+	return (t2 * Prime1 * Prime2 + t1 * Prime1) % buckets
 
 def sentenceVector(tokeniser, dictionarySize, sentence, contextHashes):
 	sequences = tokeniser.texts_to_sequences([sentence])
@@ -63,9 +62,9 @@ def sentenceVector(tokeniser, dictionarySize, sentence, contextHashes):
 	concat    = np.concatenate(iptOneHot)
 
 	if contextHashes:
-		buckets = np.zeros(Buckets * 2)
-		for t in range(SequenceLength): buckets[biGramHash(padded, t)] = 1
-		for t in range(SequenceLength): buckets[Buckets + triGramHash(padded, t)] = 1
+		buckets = np.zeros(dictionarySize * 2)
+		for t in range(SequenceLength): buckets[biGramHash(padded, t, dictionarySize)] = 1
+		for t in range(SequenceLength): buckets[dictionarySize + triGramHash(padded, t, dictionarySize)] = 1
 		return np.append(concat, buckets)
 
 	return concat
@@ -85,7 +84,7 @@ def train(x, y, contextHashes):
 	print('Dictionary size: ', dictionarySize)
 
 	contextHashesDimension = 0
-	if contextHashes: contextHashesDimension = Buckets * 2
+	if contextHashes: contextHashesDimension = dictionarySize * 2
 
 	model = Sequential()
 	model.add(Dense(EmbeddingDim, input_dim=(SequenceLength * dictionarySize + contextHashesDimension)))
