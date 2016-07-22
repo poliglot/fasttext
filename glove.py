@@ -74,10 +74,6 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 
 	return result
 
-def map_to(tupleStream, element):
-	for tpl in tupleStream:
-		yield tpl[element]
-
 def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
 	for item in dataset:
 		sv = sentenceVector(tokeniser, dictionarySize, item[0], oneHot, contextHashes)[np.newaxis]
@@ -89,7 +85,7 @@ def to_sentence(dataset, tokeniser, dictionarySize, oneHot, contextHashes):
 def train(data_reader, oneHot, contextHashes):
 	tokeniser = Tokenizer(nb_words=MaxWords)
 
-	tokeniser.fit_on_texts(map_to(data_reader.dataset(True), 0))
+	tokeniser.fit_on_texts((row[0] for row in data_reader.dataset(True)))
 
 	# Map each word to its unique index
 	wordIndex      = tokeniser.word_index
