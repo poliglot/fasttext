@@ -13,7 +13,7 @@ np.random.seed(1337)
 EmbeddingDim    = 50
 MaxWords        = 30000
 SequenceLength  = 50
-Epochs          = 5
+Epochs          = 1
 SamplesPerEpoch = 1000
 BatchSize       = 64
 Labels          = 3
@@ -104,7 +104,10 @@ def train(dataReader, oneHot, oneHotAveraged, contextHashes):
 		validation_data=validationGenerator,
 		nb_val_samples=SamplesPerEpoch)
 
-	return model, tokeniser, dictionarySize
+	model2 = Sequential()
+	model2.add(Dense(EmbeddingDim, input_dim=(oneHotDimension + contextHashesDimension), weights=model.layers[0].get_weights()))
+
+	return model, model2, tokeniser, dictionarySize
 
 # TODO Fix
 def query(model, tokeniser, dictionarySize, sentence):
