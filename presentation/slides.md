@@ -39,3 +39,13 @@ $S$: Word indices
 $N$: Number of buckets in hashing vector
 
 $P_n$: Large random prime number
+
+## Code
+\centering
+\large
+
+**Available on GitHub**
+
+\huge
+
+[github.com/poliglot/fasttext](https://github.com/poliglot/fasttext)
