@@ -54,14 +54,10 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, oneHotAve
 
 	if oneHotVectors:
 		iptOneHot = [oneHot(dictionarySize, i) for i in padded]
-		if oneHotAveraged:
-			result = np.zeros(len(iptOneHot[0]))
-			for iptOneHotVector in iptOneHot:
-				result = result + iptOneHotVector
-
-			result = result / len(iptOneHot)
-		else:
-			result = np.append(result, np.concatenate(iptOneHot))
+		result = np.append(
+			result,
+			np.mean(iptOneHot, axis=0) if oneHotAveraged else np.concatenate(iptOneHot)
+		)
 
 	if contextHashes:
 		buckets = np.zeros(dictionarySize * 2)
