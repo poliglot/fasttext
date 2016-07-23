@@ -26,3 +26,16 @@ Bag of Tricks for Efficient Text Classification
 \huge
 
 Hashing of n-grams
+
+## Hashing
+**2-grams:** $(S_{t - 1} \cdot P_1)\ \text{mod}\ N$
+
+**3-grams:** $(S_{t - 2} \cdot P_1 \cdot P_2 + S_{t - 1} \cdot P_1)\ \text{mod}\ N$
+
+$t$: Current word
+
+$S$: Word indices
+
+$N$: Number of buckets in hashing vector
+
+$P_n$: Large random prime number
