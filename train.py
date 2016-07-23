@@ -29,7 +29,7 @@ tsne_model = TSNE(n_components=2, random_state=0)
 x_y = tsne_model.fit_transform(activations)
 
 plt.scatter(np.asarray([row[0] for row in x_y]), np.asarray([row[1] for row in x_y]), cmap=plt.cm.get_cmap("jet", 10))
-plt.colorbar(ticks=range(10))
+# plt.colorbar(ticks=range(10))
 # plt.clim(-100.0, 100)
 plt.show()
 
