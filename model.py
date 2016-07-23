@@ -46,7 +46,7 @@ def triGramHash(sequence, t, buckets):
 
 	return (t2 * Prime1 * Prime2 + t1 * Prime1) % buckets
 
-def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHashes):
+def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, oneHotAveraged, contextHashes):
 	result    = np.array([])
 	sequences = tokeniser.texts_to_sequences([sentence])
 	# Zero-pad every string
@@ -54,7 +54,10 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 
 	if oneHotVectors:
 		iptOneHot = [oneHot(dictionarySize, i) for i in padded]
-		result    = np.append(result, np.concatenate(iptOneHot))
+		result = np.append(
+			result,
+			np.mean(iptOneHot, axis=0) if oneHotAveraged else np.concatenate(iptOneHot)
+		)
 
 	if contextHashes:
 		buckets = np.zeros(dictionarySize * 2)
@@ -64,18 +67,18 @@ def sentenceVector(tokeniser, dictionarySize, sentence, oneHotVectors, contextHa
 
 	return result
 
-def mapGenerator(generator, tokeniser, dictionarySize, oneHot, contextHashes):
+
+def mapGenerator(generator, tokeniser, dictionarySize, oneHot, oneHotAveraged, contextHashes):
 	for row in generator:
 		sentence = row[0]
 		label    = row[1]
 
-		x = sentenceVector(tokeniser, dictionarySize, sentence, oneHot, contextHashes)
+		x = sentenceVector(tokeniser, dictionarySize, sentence, oneHot, oneHotAveraged, contextHashes)
 		y = np.zeros(Labels)
 		y[LabelMapping[label]] = 1
-
 		yield (x[np.newaxis], y[np.newaxis])
 
-def train(dataReader, oneHot, contextHashes):
+def train(dataReader, oneHot, oneHotAveraged, contextHashes):
 	n = (Epochs + 1) * SamplesPerEpoch  # TODO + 1 should not be needed
 
 	tokeniser = Tokenizer(nb_words=MaxWords)
@@ -84,7 +87,7 @@ def train(dataReader, oneHot, contextHashes):
 	# `word_index` maps each word to its unique index
 	dictionarySize = len(tokeniser.word_index) + 1
 
-	oneHotDimension        = SequenceLength * dictionarySize if oneHot else 0
+	oneHotDimension        = (1 if oneHotAveraged else SequenceLength) * dictionarySize if oneHot else 0
 	contextHashesDimension = dictionarySize * 2 if contextHashes else 0
 
 	model = Sequential()
@@ -92,8 +95,8 @@ def train(dataReader, oneHot, contextHashes):
 	model.add(Dense(Labels, activation='softmax'))
 	model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
 
-	trainingGenerator   = mapGenerator(dataReader.trainingData(n),   tokeniser, dictionarySize, oneHot, contextHashes)
-	validationGenerator = mapGenerator(dataReader.validationData(n), tokeniser, dictionarySize, oneHot, contextHashes)
+	trainingGenerator   = mapGenerator(dataReader.trainingData(n),   tokeniser, dictionarySize, oneHot, oneHotAveraged, contextHashes)
+	validationGenerator = mapGenerator(dataReader.validationData(n), tokeniser, dictionarySize, oneHot, oneHotAveraged, contextHashes)
 
 	model.fit_generator(trainingGenerator,
 		nb_epoch=Epochs,
