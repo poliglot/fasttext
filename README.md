@@ -1,5 +1,5 @@
 # FastText
-Inofficial implementation of the paper [Bag of Tricks for Efficient Text Classification](https://arxiv.org/pdf/1607.01759v2.pdf) by Joulin et al.
+Unofficial implementation of the paper [Bag of Tricks for Efficient Text Classification](https://arxiv.org/pdf/1607.01759v2.pdf) by Joulin et al.
 
 ## Prerequisites
 FastText requires Python 3 with Keras installed.
