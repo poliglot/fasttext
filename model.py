@@ -13,7 +13,7 @@ np.random.seed(1337)
 EmbeddingDim    = 50
 MaxWords        = 30000
 SequenceLength  = 50
-Epochs          = 1
+Epochs          = 5
 SamplesPerEpoch = 1000
 BatchSize       = 64
 Labels          = 3
