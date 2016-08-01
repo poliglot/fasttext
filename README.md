@@ -14,6 +14,19 @@ Train the model using the following command:
 ./train.py
 ```
 
+It generates `data.csv` which represents the model's embedding space of the 
+validation set. It is obtained by removing the last layer of the model and using
+t-SNE for the dimensionality reduction.
+
+`index.html` implements a D3 visualisation to view the embedding space. You need 
+to run a local web server because browsers don't allow file accesses:
+
+```bash
+python -m http.server 8000
+```
+
+Now point your browser to: [localhost:8000](http://localhost:8080/).
+
 ## License
 FastText is licensed under the terms of the Apache v2.0 license.
 
