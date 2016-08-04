@@ -104,7 +104,10 @@ def train(dataReader, oneHot, oneHotAveraged, contextHashes):
 		validation_data=validationGenerator,
 		nb_val_samples=SamplesPerEpoch)
 
-	return model, tokeniser, dictionarySize
+	model2 = Sequential()
+	model2.add(Dense(EmbeddingDim, input_dim=(oneHotDimension + contextHashesDimension), weights=model.layers[0].get_weights()))
+
+	return model, model2, tokeniser, dictionarySize
 
 # TODO Fix
 def query(model, tokeniser, dictionarySize, sentence):
